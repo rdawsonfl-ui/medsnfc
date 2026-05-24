@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedsNFC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0C0F1A;--surface:#131828;--card:#1A2238;
+  --border:rgba(255,255,255,0.07);--white:#FFFFFF;
+  --offwhite:#E8E6F0;--muted:#7A7F9A;
+  --teal:#00C4A7;--teal-dim:rgba(0,196,167,0.12);
+  --green:#2ECC8A;--gold:#F0A500;--red:#E05050;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--offwhite);font-family:'DM Sans',sans-serif;min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit}
+
+/* ---- App shell ---- */
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(12,15,26,0.96);backdrop-filter:blur(14px);z-index:50}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--white)}
+.logo span{color:var(--teal)}
+.role-switch{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:3px}
+.role-switch button{background:transparent;border:none;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.5px;padding:6px 12px;border-radius:30px;cursor:pointer;transition:all .15s}
+.role-switch button.active{background:var(--teal);color:#0C0F1A}
+
+/* ============ SENIOR / PATIENT VIEW — calm, huge, low text ============ */
+.patient{flex:1;display:flex;flex-direction:column;padding:30px 22px 40px;text-align:center;animation:fade .4s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.p-period{font-size:18px;color:var(--muted);font-weight:500}
+.p-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,11vw,60px);color:var(--white);line-height:.95;letter-spacing:1px;margin:4px 0 6px}
+.p-due{font-size:15px;color:var(--muted);margin-bottom:26px}
+.p-due b{color:var(--teal);font-weight:600}
+
+/* the giant action */
+.big-tap{width:100%;border:none;cursor:pointer;color:#08120F;
+  background:linear-gradient(180deg,#1FE0BE 0%,#00C4A7 100%);
+  border-radius:28px;padding:42px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  box-shadow:0 18px 40px -12px rgba(0,196,167,.5);transition:transform .12s ease}
+.big-tap:active{transform:scale(.97)}
+.big-tap .glyph{font-size:54px;line-height:1}
+.big-tap .label{font-size:26px;font-weight:700;letter-spacing:-.01em}
+.big-tap.sub{padding:30px 20px}
+.big-tap.sub .glyph{font-size:40px}
+.big-tap.sub .label{font-size:21px}
+
+.remind{margin-top:18px;background:transparent;border:none;color:var(--muted);font-size:17px;font-weight:600;cursor:pointer;padding:10px}
+
+/* done state */
+.done{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 0;animation:pop .45s cubic-bezier(.2,.8,.3,1.2)}
+@keyframes pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.done-ring{width:110px;height:110px;border-radius:50%;background:var(--teal-dim);color:var(--teal);
+  display:flex;align-items:center;justify-content:center;font-size:58px;font-weight:800;
+  box-shadow:0 0 0 12px rgba(0,196,167,.08)}
+.done-msg{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--white);letter-spacing:1px;line-height:1}
+.done-time{font-size:16px;color:var(--teal);font-weight:600}
+.done-told{font-size:13px;color:var(--muted);margin-top:2px}
+.undo{background:transparent;border:none;color:var(--muted);text-decoration:underline;font-size:14px;cursor:pointer;margin-top:4px}
+
+/* meds list (collapsed by default, calm) */
+.p-meds{margin-top:30px;text-align:left}
+.p-meds-h{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.pill-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.pill-row:last-child{border-bottom:none}
+.pill-dot{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--surface);border:2px solid var(--border);color:var(--muted)}
+.pill-row.on .pill-dot{background:var(--teal-dim);border-color:var(--teal);color:var(--teal)}
+.pill-name{font-size:15px;color:var(--white);font-weight:500}
+.pill-meta{font-size:12px;color:var(--muted)}
+.pill-when{margin-left:auto;font-size:12px;color:var(--muted)}
+.pill-row.on .pill-when{color:var(--teal)}
+
+.week-strip{display:flex;gap:6px;margin-top:24px}
+.wd{flex:1;text-align:center;padding:9px 0;border-radius:10px;border:1px solid var(--border);background:var(--surface)}
+.wd .d{font-size:11px;font-weight:700;color:var(--muted)}
+.wd .m{font-size:14px;font-weight:800;height:18px;color:var(--muted)}
+.wd.taken{background:var(--teal-dim);border-color:var(--teal)}
+.wd.taken .m{color:var(--teal)}
+.wd.today{box-shadow:0 0 0 2px rgba(0,196,167,.4)}
+.wd.future{opacity:.4}
+
+/* ============ CAREGIVER VIEW — data rich ============ */
+.caregiver{flex:1;padding:24px 20px 40px;animation:fade .4s ease}
+.cg-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.cg-avatar{width:46px;height:46px;border-radius:50%;background:var(--surface);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px}
+.cg-name{font-size:16px;font-weight:700;color:var(--white)}
+.cg-status{font-size:12px;color:var(--muted);margin-top:2px}
+.cg-status .ok{color:var(--teal)}
+.cg-status .warn{color:var(--gold)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center}
+.stat .v{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);line-height:1}
+.stat .v.good{color:var(--teal)}.stat .v.warn{color:var(--gold)}
+.stat .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+.live{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.live-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.feed-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.feed-row:last-child{border-bottom:none}
+.feed-ic{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.feed-ic.ok{background:var(--teal-dim);color:var(--teal)}
+.feed-ic.miss{background:rgba(224,80,80,.14);color:var(--red)}
+.feed-txt{flex:1;color:var(--offwhite)}
+.feed-time{font-size:11px;color:var(--muted)}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
+
+.adh{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.adh-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.adh-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12px}
+.adh-row:last-child{margin-bottom:0}
+.adh-day{width:34px;color:var(--muted)}
+.adh-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.adh-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
+.adh-pct{width:34px;text-align:right;color:var(--teal);font-weight:600;font-size:11px}
+
+.sms-note{margin-top:16px;background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--offwhite);line-height:1.6}
+.sms-note .lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px}
+
+.foot{text-align:center;font-size:11px;color:var(--muted);padding:24px 20px}
+.foot a{color:var(--teal);text-decoration:none}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--teal);color:var(--white);padding:12px 20px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo">Meds<span>NFC</span></div>
+    <div class="role-switch">
+      <button id="rolePatient" class="active" onclick="setRole('patient')">PATIENT</button>
+      <button id="roleCaregiver" onclick="setRole('caregiver')">CAREGIVER</button>
+    </div>
+  </div>
+  <div id="view"></div>
+  <div class="foot">
+    Tag: <b id="tagLabel">—</b> · <a href="#" onclick="resetDay(event)">reset today (test)</a>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   MedsNFC — working app
+   ---------------------------------------------------------------------
+   Routing: the NFC tag opens this page with ?tag=rich-morning (etc).
+   The tag id selects which patient + dose group is shown.
+   Persistence: taps are saved per-tag, per-day. Survives refresh/close.
+   ---------------------------------------------------------------------
+   >>> BACKEND SWAP POINT <<<
+   Right now data lives in the Store object (localStorage fallback +
+   in-memory). To go live with Supabase, replace the 3 methods in Store
+   (load / saveDose / loadHistory) with Supabase queries. The UI never
+   needs to change. The caregiver SMS fires from notifyCaregiver() —
+   point that at a Supabase Edge Function / Twilio call when ready.
+   ===================================================================== */
+
+// ---- Config: tags map to a patient + a dose group ----
+const TAGS = {
+  "rich-morning": {
+    patient: "Richard Dawson", caregiver: "Sarah", group: "Morning", dueLabel: "8:00 AM",
+    meds: [
+      { name: "Metoprolol 25mg", meta: "Heart rate · with breakfast" },
+      { name: "Lisinopril 10mg", meta: "Blood pressure" },
+      { name: "Metformin 500mg", meta: "Diabetes · with breakfast" },
+      { name: "Warfarin 5mg", meta: "Blood thinner" },
+    ],
+  },
+  "rich-evening": {
+    patient: "Richard Dawson", caregiver: "Sarah", group: "Evening", dueLabel: "9:00 PM",
+    meds: [ { name: "Atorvastatin 40mg", meta: "Cholesterol · at bedtime" } ],
+  },
+};
+const DEFAULT_TAG = "rich-morning";
+
+// ---- read ?tag= from URL (this is what the NFC tag encodes) ----
+function currentTag() {
+  const p = new URLSearchParams(location.search).get("tag");
+  return (p && TAGS[p]) ? p : DEFAULT_TAG;
+}
+
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function todayKey(d=new Date()){ return d.toISOString().slice(0,10); }
+function fmtTime(d=new Date()){ return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}); }
+
+/* ---------------- Store: the only thing that changes for Supabase ---------------- */
+const Store = {
+  _mem: {},
+  _key(tag, day){ return `medsnfc:${tag}:${day}`; },
+  _read(){
+    try { return JSON.parse(localStorage.getItem("medsnfc:all")||"{}"); }
+    catch(e){ return this._mem; }
+  },
+  _write(obj){
+    try { localStorage.setItem("medsnfc:all", JSON.stringify(obj)); }
+    catch(e){ this._mem = obj; }
+  },
+  // returns { takenAt: "8:14 AM" | null } for a tag+day
+  load(tag, day){
+    const all = this._read();
+    return all[this._key(tag,day)] || { takenAt:null };
+  },
+  // record (or clear) a dose
+  saveDose(tag, day, takenAt){
+    const all = this._read();
+    all[this._key(tag,day)] = { takenAt };
+    this._write(all);
+  },
+  // last N days of history for a tag, for the adherence chart
+  loadHistory(tag, n=7){
+    const out = [];
+    for(let i=0;i<n;i++){
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const rec = this.load(tag, todayKey(d));
+      out.push({ date:d, taken: !!rec.takenAt, time: rec.takenAt });
+    }
+    return out;
+  }
+};
+
+/* ---------------- Caregiver notification (SMS swap point) ---------------- */
+function notifyCaregiver(tag, takenAt){
+  const t = TAGS[tag];
+  // >>> When live: POST to a Supabase Edge Function that calls Twilio. <<<
+  // For now we record that the message "would" send, and show it in the UI.
+  const all = Store._read();
+  const log = all["medsnfc:notifylog"] || [];
+  log.unshift({
+    tag, when: todayKey()+" "+takenAt,
+    msg: `✓ ${firstName(t.patient)} took ${t.group.toLowerCase()} medications at ${takenAt}. ${t.meds.length} dose${t.meds.length>1?"s":""} confirmed.`
+  });
+  all["medsnfc:notifylog"] = log.slice(0,20);
+  Store._write(all);
+}
+function firstName(n){ return n.split(" ")[0]; }
+
+/* ---------------- State + render ---------------- */
+let role = "patient";
+function setRole(r){
+  role = r;
+  document.getElementById("rolePatient").classList.toggle("active", r==="patient");
+  document.getElementById("roleCaregiver").classList.toggle("active", r==="caregiver");
+  render();
+}
+
+function periodGreeting(){
+  const h=new Date().getHours();
+  return h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+}
+
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),2200);
+}
+
+function takeDose(tag){
+  const day=todayKey();
+  const rec=Store.load(tag,day);
+  if(rec.takenAt) return;
+  const t=fmtTime();
+  Store.saveDose(tag,day,t);
+  notifyCaregiver(tag,t);
+  toast("Saved · "+t);
+  render();
+}
+function undoDose(tag){
+  Store.saveDose(tag,todayKey(),null);
+  render();
+}
+function resetDay(e){
+  e.preventDefault();
+  Store.saveDose(currentTag(),todayKey(),null);
+  toast("Today reset");
+  render();
+}
+
+function render(){
+  const tag=currentTag();
+  document.getElementById("tagLabel").textContent=tag;
+  document.getElementById("view").innerHTML =
+    role==="patient" ? renderPatient(tag) : renderCaregiver(tag);
+}
+
+/* ---- Patient (senior) screen ---- */
+function renderPatient(tag){
+  const t=TAGS[tag];
+  const rec=Store.load(tag,todayKey());
+  const done=!!rec.takenAt;
+  const todayIdx=new Date().getDay();
+  const hist=Store.loadHistory(tag,7).reverse(); // oldest -> newest
+
+  // week strip
+  const strip = hist.map(h=>{
+    const i=h.date.getDay();
+    const future = h.date > new Date() && h.date.toDateString()!==new Date().toDateString();
+    const isToday = h.date.toDateString()===new Date().toDateString();
+    return `<div class="wd ${h.taken?'taken':''} ${isToday?'today':''} ${future?'future':''}">
+      <div class="d">${DAYS[i]}</div><div class="m">${h.taken?'✓':isToday?'•':''}</div></div>`;
+  }).join("");
+
+  const action = done ? `
+    <div class="done">
+      <div class="done-ring">✓</div>
+      <div class="done-msg">All done</div>
+      <div class="done-time">Taken at ${rec.takenAt}</div>
+      <div class="done-told">${firstName(t.caregiver)} has been told — everything's fine</div>
+      <button class="undo" onclick="undoDose('${tag}')">undo</button>
+    </div>` : `
+    <button class="big-tap ${t.group==='Evening'?'sub':''}" onclick="takeDose('${tag}')">
+      <span class="glyph">✓</span>
+      <span class="label">I took them</span>
+    </button>
+    <button class="remind" onclick="toast('Okay — we\\'ll remind you soon')">⏰ Remind me later</button>`;
+
+  const meds = t.meds.map(m=>`
+    <div class="pill-row ${done?'on':''}">
+      <div class="pill-dot">${done?'✓':'○'}</div>
+      <div><div class="pill-name">${m.name}</div><div class="pill-meta">${m.meta}</div></div>
+      <div class="pill-when">${done?'taken':'due'}</div>
+    </div>`).join("");
+
+  return `<div class="patient">
+    <div class="p-period">${periodGreeting()}</div>
+    <div class="p-name">${t.group} meds</div>
+    <div class="p-due">${done?'Logged for today':'Due at <b>'+t.dueLabel+'</b>'}</div>
+    ${action}
+    <div class="p-meds">
+      <div class="p-meds-h">${t.group} · ${t.meds.length} medication${t.meds.length>1?'s':''}</div>
+      ${meds}
+    </div>
+    <div class="week-strip">${strip}</div>
+  </div>`;
+}
+
+/* ---- Caregiver screen ---- */
+function renderCaregiver(tag){
+  const t=TAGS[tag];
+  const hist=Store.loadHistory(tag,7);
+  const today=hist[0];
+  const takenDays=hist.filter(h=>h.taken).length;
+  // streak from today backwards
+  let streak=0; for(const h of hist){ if(h.taken) streak++; else break; }
+
+  const adh=hist.slice().reverse().map(h=>{
+    const pct=h.taken?100:0;
+    return `<div class="adh-row">
+      <div class="adh-day">${DAYS[h.date.getDay()]}</div>
+      <div class="adh-bar"><div class="adh-fill" style="width:${pct}%"></div></div>
+      <div class="adh-pct">${pct}%</div></div>`;
+  }).join("");
+
+  // live feed = notify log for this tag
+  const log=(Store._read()["medsnfc:notifylog"]||[]).filter(l=>l.tag===tag).slice(0,5);
+  const feed = log.length ? log.map(l=>`
+    <div class="feed-row">
+      <div class="feed-ic ok">✓</div>
+      <div class="feed-txt">${l.msg}</div>
+    </div>`).join("") :
+    `<div class="empty">No doses logged yet. Switch to PATIENT and tap to see it appear here live.</div>`;
+
+  const statusLine = today.taken
+    ? `<span class="ok">● Today's ${t.group.toLowerCase()} dose taken at ${today.time}</span>`
+    : `<span class="warn">● ${t.group} dose not yet taken — due ${t.dueLabel}</span>`;
+
+  return `<div class="caregiver">
+    <div class="cg-head">
+      <div class="cg-avatar">💊</div>
+      <div><div class="cg-name">${t.patient}</div>
+      <div class="cg-status">${statusLine}</div></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v good">${takenDays}</div><div class="l">Days taken (7d)</div></div>
+      <div class="stat"><div class="v ${streak>0?'good':'warn'}">${streak}</div><div class="l">Day streak</div></div>
+      <div class="stat"><div class="v">${Math.round(takenDays/7*100)}%</div><div class="l">Adherence</div></div>
+    </div>
+    <div class="live">
+      <div class="live-h">Live activity</div>
+      ${feed}
+    </div>
+    <div class="adh">
+      <div class="adh-h">This week — adherence</div>
+      ${adh}
+    </div>
+    <div class="sms-note">
+      <span class="lbl">⚠ Automatic alerts</span>
+      ${firstName(t.caregiver)} gets a confirmation text after each dose. If the ${t.group.toLowerCase()} dose isn't taken within 2 hours of ${t.dueLabel}, ${firstName(t.caregiver)} gets a missed-dose alert. <i>(SMS sending activates when Twilio is connected.)</i>
+    </div>
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
