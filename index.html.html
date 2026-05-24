@@ -5,386 +5,250 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MedsNFC</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0C0F1A;--surface:#131828;--card:#1A2238;
-  --border:rgba(255,255,255,0.07);--white:#FFFFFF;
-  --offwhite:#E8E6F0;--muted:#7A7F9A;
-  --teal:#00C4A7;--teal-dim:rgba(0,196,167,0.12);
-  --green:#2ECC8A;--gold:#F0A500;--red:#E05050;
+  --bg:#0C0F1A;--surface:#161C2E;--card:#1A2238;
+  --border:rgba(255,255,255,0.09);--white:#FFFFFF;
+  --offwhite:#EDEBF5;--muted:#9398B5;
+  --teal:#00C4A7;--teal-dim:rgba(0,196,167,0.14);
+  --gold:#F0A500;--red:#E05656;
 }
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--offwhite);font-family:'DM Sans',sans-serif;min-height:100vh;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--offwhite);font-family:'DM Sans',sans-serif;min-height:100vh;-webkit-tap-highlight-color:transparent;font-size:18px}
 button{font-family:inherit}
-.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(12,15,26,0.96);backdrop-filter:blur(14px);z-index:50}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--white)}
+.app{max-width:500px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(12,15,26,0.97);backdrop-filter:blur(14px);z-index:50}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--white)}
 .logo span{color:var(--teal)}
-.role-switch{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:3px}
-.role-switch button{background:transparent;border:none;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.5px;padding:6px 12px;border-radius:30px;cursor:pointer;transition:all .15s}
-.role-switch button.active{background:var(--teal);color:#0C0F1A}
+.gear{background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 8px}
 
-.patient{flex:1;display:flex;flex-direction:column;padding:30px 22px 40px;text-align:center;animation:fade .4s ease}
+.patient{flex:1;display:flex;flex-direction:column;padding:26px 22px 50px;animation:fade .4s ease}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-.p-period{font-size:18px;color:var(--muted);font-weight:500}
-.p-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,11vw,60px);color:var(--white);line-height:.95;letter-spacing:1px;margin:4px 0 6px}
-.p-due{font-size:15px;color:var(--muted);margin-bottom:26px}
-.p-due b{color:var(--teal);font-weight:600}
-.big-tap{width:100%;border:none;cursor:pointer;color:#08120F;background:linear-gradient(180deg,#1FE0BE 0%,#00C4A7 100%);border-radius:28px;padding:42px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 18px 40px -12px rgba(0,196,167,.5);transition:transform .12s ease}
-.big-tap:active{transform:scale(.97)}
-.big-tap .glyph{font-size:54px;line-height:1}
-.big-tap .label{font-size:26px;font-weight:700;letter-spacing:-.01em}
-.big-tap.sub{padding:30px 20px}.big-tap.sub .glyph{font-size:40px}.big-tap.sub .label{font-size:21px}
-.remind{margin-top:18px;background:transparent;border:none;color:var(--muted);font-size:17px;font-weight:600;cursor:pointer;padding:10px}
-.done{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 0;animation:pop .45s cubic-bezier(.2,.8,.3,1.2)}
-@keyframes pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
-.done-ring{width:110px;height:110px;border-radius:50%;background:var(--teal-dim);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:58px;font-weight:800;box-shadow:0 0 0 12px rgba(0,196,167,.08)}
-.done-msg{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--white);letter-spacing:1px;line-height:1}
-.done-time{font-size:16px;color:var(--teal);font-weight:600}
-.done-told{font-size:13px;color:var(--muted);margin-top:2px}
-.undo{background:transparent;border:none;color:var(--muted);text-decoration:underline;font-size:14px;cursor:pointer;margin-top:4px}
-.p-meds{margin-top:30px;text-align:left}
-.p-meds-h{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.pill-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.pill-row:last-child{border-bottom:none}
-.pill-dot{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--surface);border:2px solid var(--border);color:var(--muted)}
-.pill-row.on .pill-dot{background:var(--teal-dim);border-color:var(--teal);color:var(--teal)}
-.pill-name{font-size:15px;color:var(--white);font-weight:500}
-.pill-meta{font-size:12px;color:var(--muted)}
-.pill-when{margin-left:auto;font-size:12px;color:var(--muted)}
-.pill-row.on .pill-when{color:var(--teal)}
 
-.periods{display:flex;gap:6px;margin-bottom:22px}
-.periods button{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:11px 4px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px}
+/* period switcher — big tabs */
+.periods{display:flex;gap:8px;margin-bottom:26px}
+.periods button{flex:1;background:var(--surface);border:2px solid var(--border);color:var(--muted);border-radius:16px;padding:16px 4px;font-size:16px;font-weight:700;cursor:pointer}
+.periods button .t{display:block;font-size:13px;font-weight:600;margin-top:4px;opacity:.8}
 .periods button.active{border-color:var(--teal);color:var(--teal);background:var(--teal-dim)}
-.periods button .sub{display:block;font-size:9px;font-weight:600;color:var(--muted);margin-top:2px}
-.week-strip{display:flex;gap:6px;margin-top:24px}
-.wd{flex:1;text-align:center;padding:9px 0;border-radius:10px;border:1px solid var(--border);background:var(--surface)}
-.wd .d{font-size:11px;font-weight:700;color:var(--muted)}
-.wd .m{font-size:14px;font-weight:800;height:18px;color:var(--muted)}
+
+.greet{text-align:center;font-size:19px;color:var(--muted);font-weight:500}
+.title{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,12vw,64px);color:var(--white);line-height:1;letter-spacing:1px;margin:6px 0 8px}
+.due{text-align:center;font-size:17px;color:var(--muted);margin-bottom:28px}
+.due b{color:var(--teal);font-weight:700}
+
+.big-tap{width:100%;border:none;cursor:pointer;color:#08120F;background:linear-gradient(180deg,#1FE0BE,#00C4A7);border-radius:30px;padding:44px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 18px 40px -12px rgba(0,196,167,.5);transition:transform .12s}
+.big-tap:active{transform:scale(.97)}
+.big-tap .glyph{font-size:60px;line-height:1}
+.big-tap .label{font-size:28px;font-weight:700}
+
+.remind{margin:18px auto 0;display:block;background:transparent;border:none;color:var(--muted);font-size:18px;font-weight:600;cursor:pointer;padding:10px}
+
+.done{display:flex;flex-direction:column;align-items:center;gap:16px;padding:24px 0}
+.done-ring{width:124px;height:124px;border-radius:50%;background:var(--teal-dim);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:66px;font-weight:800;box-shadow:0 0 0 14px rgba(0,196,167,.07)}
+.done-msg{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--white);letter-spacing:1px}
+.done-time{font-size:19px;color:var(--teal);font-weight:700}
+.undo{background:transparent;border:none;color:var(--muted);text-decoration:underline;font-size:16px;cursor:pointer}
+
+.meds{margin-top:34px}
+.meds-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.meds-h .lbl{font-size:15px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.pill-row{display:flex;align-items:center;gap:14px;padding:16px 0;border-bottom:1px solid var(--border)}
+.pill-row:last-child{border-bottom:none}
+.pill-dot{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--surface);border:2px solid var(--border);color:var(--muted)}
+.pill-row.on .pill-dot{background:var(--teal-dim);border-color:var(--teal);color:var(--teal)}
+.pill-name{font-size:19px;color:var(--white);font-weight:600}
+.pill-meta{font-size:15px;color:var(--muted);margin-top:2px}
+.pill-edit{margin-left:auto;background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:6px 10px}
+
+.add-med{width:100%;margin-top:18px;background:var(--surface);border:2px dashed var(--border);color:var(--teal);border-radius:18px;padding:20px;font-size:19px;font-weight:700;cursor:pointer}
+.add-med:active{transform:scale(.99)}
+
+.week{display:flex;gap:7px;margin-top:30px}
+.wd{flex:1;text-align:center;padding:12px 0;border-radius:12px;border:2px solid var(--border);background:var(--surface)}
+.wd .d{font-size:13px;font-weight:700;color:var(--muted)}
+.wd .m{font-size:18px;font-weight:800;height:22px;color:var(--muted)}
 .wd.taken{background:var(--teal-dim);border-color:var(--teal)}.wd.taken .m{color:var(--teal)}
-.wd.today{box-shadow:0 0 0 2px rgba(0,196,167,.4)}.wd.future{opacity:.4}
+.wd.today{box-shadow:0 0 0 2px rgba(0,196,167,.45)}
 
-.caregiver{flex:1;padding:24px 20px 40px;animation:fade .4s ease}
-.cg-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.cg-avatar{width:46px;height:46px;border-radius:50%;background:var(--surface);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px}
-.cg-name{font-size:16px;font-weight:700;color:var(--white)}
-.cg-status{font-size:12px;color:var(--muted);margin-top:2px}
-.cg-status .ok{color:var(--teal)}.cg-status .warn{color:var(--gold)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center}
-.stat .v{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);line-height:1}
-.stat .v.good{color:var(--teal)}.stat .v.warn{color:var(--gold)}
-.stat .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
-.live{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
-.live-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.feed-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
-.feed-row:last-child{border-bottom:none}
-.feed-ic{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
-.feed-ic.ok{background:var(--teal-dim);color:var(--teal)}
-.feed-txt{flex:1;color:var(--offwhite)}
-.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
-.adh{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
-.adh-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
-.adh-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12px}
-.adh-row:last-child{margin-bottom:0}
-.adh-day{width:34px;color:var(--muted)}
-.adh-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-.adh-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
-.adh-pct{width:34px;text-align:right;color:var(--teal);font-weight:600;font-size:11px}
+/* modal for add/edit med */
+.modal-bg{position:fixed;inset:0;background:rgba(8,10,18,.78);display:flex;align-items:flex-end;justify-content:center;z-index:200;animation:fade .2s}
+.modal{background:var(--card);width:100%;max-width:500px;border-radius:26px 26px 0 0;padding:28px 24px calc(28px + env(safe-area-inset-bottom));border:1px solid var(--border)}
+.modal h3{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);letter-spacing:1px;margin-bottom:20px}
+.fld{margin-bottom:18px}
+.fld label{display:block;font-size:14px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.fld input,.fld select{width:100%;background:var(--bg);border:2px solid var(--border);border-radius:14px;padding:16px;color:var(--white);font-size:19px;font-family:inherit}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--teal)}
+.modal-save{width:100%;background:var(--teal);color:#08120F;border:none;border-radius:16px;padding:18px;font-size:20px;font-weight:700;cursor:pointer;margin-top:6px}
+.modal-del{width:100%;background:transparent;color:var(--red);border:none;padding:16px;font-size:17px;font-weight:600;cursor:pointer;margin-top:6px}
+.modal-cancel{width:100%;background:transparent;color:var(--muted);border:none;padding:12px;font-size:17px;cursor:pointer}
 
-/* med setup form */
-.setup{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
-.setup-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
-.field{margin-bottom:10px}
-.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 12px;color:var(--white);font-size:14px;font-family:inherit}
-.field input:focus,.field select:focus{outline:none;border-color:var(--teal)}
-.add-btn{width:100%;background:var(--teal);color:#08120F;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
-.add-btn:active{transform:scale(.98)}
-.med-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
-.med-item:last-child{border-bottom:none}
-.med-item .nm{color:var(--white);font-weight:500}
-.med-item .mt{color:var(--muted);font-size:11px}
-.med-del{margin-left:auto;background:transparent;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:4px 8px}
-.tag-pick{display:flex;gap:6px;margin-bottom:14px}
-.tag-pick button{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:9px;font-size:12px;font-weight:600;cursor:pointer}
-.tag-pick button.active{border-color:var(--teal);color:var(--teal);background:var(--teal-dim)}
-
-.foot{text-align:center;font-size:11px;color:var(--muted);padding:24px 20px}
-.foot a{color:var(--teal);text-decoration:none}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--teal);color:var(--white);padding:12px 20px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.foot{text-align:center;font-size:14px;color:var(--muted);padding:22px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--card);border:2px solid var(--teal);color:var(--white);padding:14px 24px;border-radius:30px;font-size:16px;font-weight:700;opacity:0;transition:all .3s;z-index:300}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.loading{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px;padding:60px 20px;text-align:center}
-.err{background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.3);color:#f0a0a0;border-radius:10px;padding:14px;font-size:13px;margin:16px 20px;line-height:1.5}
+.loading{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;padding:80px 20px}
+.err{background:rgba(224,86,86,.12);border:1px solid rgba(224,86,86,.3);color:#f0a6a6;border-radius:14px;padding:18px;font-size:16px;margin:18px;line-height:1.5}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <div class="logo">Meds<span>NFC</span></div>
-    <div class="role-switch">
-      <button id="rolePatient" class="active" onclick="setRole('patient')">PATIENT</button>
-      <button id="roleCaregiver" onclick="setRole('caregiver')">CAREGIVER</button>
-    </div>
+    <button class="gear" onclick="toggleCare()" title="Caregiver view">👁</button>
   </div>
   <div id="view"><div class="loading">Loading…</div></div>
-  <div class="foot">
-    Tag: <b id="tagLabel">—</b> · <a href="#" onclick="resetDay(event)">reset today (test)</a>
-  </div>
+  <div class="foot" id="foot"></div>
 </div>
+<div id="modalHost"></div>
 <div class="toast" id="toast"></div>
 
 <script>
-/* =====================================================================
-   MedsNFC — Supabase-connected
-   Data is shared across all devices via Supabase. Two phones, one truth.
-   The NFC tag opens this page with ?tag=rich-morning etc.
-   ===================================================================== */
-const SUPABASE_URL = "https://ogyqghrcybkwxxxevdlz.supabase.co";
-const SUPABASE_KEY = "sb_publishable_BSF_8zpvls7hG6R7dkehPw_Mgz02T0w";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL="https://ogyqghrcybkwxxxevdlz.supabase.co";
+const SUPABASE_KEY="sb_publishable_BSF_8zpvls7hG6R7dkehPw_Mgz02T0w";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const dayKey=(d=new Date())=>d.toISOString().slice(0,10);
+const fmt=iso=>new Date(iso).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+const currentTag=()=>new URLSearchParams(location.search).get("tag")||"rich-morning";
 
-const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-function dayKey(d=new Date()){ return d.toISOString().slice(0,10); }
-function fmtTime(iso){ return new Date(iso).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}); }
-function firstName(n){ return (n||"").split(" ")[0] || "they"; }
+let careView=false; // caregiver layer off by default — solo patient is primary
+let state={tag:null,patient:null,meds:[],doses:[],periods:[],loading:true,error:null};
 
-function currentTag(){
-  return new URLSearchParams(location.search).get("tag") || "rich-morning";
-}
-
-let role = "patient";
-let state = { tag:null, patient:null, meds:[], doses:[], periods:[], loading:true, error:null };
-
-/* ---------------- Data layer (Supabase) ---------------- */
 async function loadAll(){
-  const tagId = currentTag();
-  state.loading = true; state.error = null; render();
-  try {
-    const { data: tag, error: te } = await sb
-      .from("medsnfc_tags").select("*, medsnfc_patients(*)").eq("id", tagId).single();
-    if(te) throw te;
-    if(!tag){ state.error = `No tag "${tagId}" found. Set it up in the Caregiver tab.`; state.loading=false; render(); return; }
-
-    const { data: meds } = await sb
-      .from("medsnfc_meds").select("*").eq("tag_id", tagId).order("sort_order");
-    // last 7 days of doses
-    const since = new Date(); since.setDate(since.getDate()-6);
-    const { data: doses } = await sb
-      .from("medsnfc_doses").select("*").eq("tag_id", tagId).gte("dose_date", dayKey(since));
-
-    state.tag = tag;
-    state.patient = tag.medsnfc_patients;
-    state.meds = meds || [];
-    state.doses = doses || [];
-    // fetch sibling period tags for this patient (Morning/Afternoon/Bedtime)
-    const { data: sibs } = await sb.from("medsnfc_tags")
-      .select("id,dose_group,due_label").eq("patient_id", tag.patient_id);
-    const order = { "Morning":1, "Afternoon":2, "Bedtime":3, "Evening":3 };
-    state.periods = (sibs||[]).sort((a,b)=>(order[a.dose_group]||9)-(order[b.dose_group]||9));
-    state.loading = false;
-    render();
-  } catch(e){
-    console.error(e);
-    state.error = "Couldn't reach the database. Check connection and refresh.";
-    state.loading = false; render();
-  }
+  const tagId=currentTag();
+  state.loading=true;state.error=null;render();
+  try{
+    const {data:tag,error:te}=await sb.from("medsnfc_tags").select("*, medsnfc_patients(*)").eq("id",tagId).single();
+    if(te)throw te;
+    if(!tag){state.error=`No tag "${tagId}" found.`;state.loading=false;render();return;}
+    const {data:meds}=await sb.from("medsnfc_meds").select("*").eq("tag_id",tagId).order("sort_order");
+    const since=new Date();since.setDate(since.getDate()-6);
+    const {data:doses}=await sb.from("medsnfc_doses").select("*").eq("tag_id",tagId).gte("dose_date",dayKey(since));
+    const {data:sibs}=await sb.from("medsnfc_tags").select("id,dose_group,due_label").eq("patient_id",tag.patient_id);
+    const ord={Morning:1,Afternoon:2,Bedtime:3,Evening:3};
+    state.tag=tag;state.patient=tag.medsnfc_patients;state.meds=meds||[];state.doses=doses||[];
+    state.periods=(sibs||[]).sort((a,b)=>(ord[a.dose_group]||9)-(ord[b.dose_group]||9));
+    state.loading=false;render();
+  }catch(e){console.error(e);state.error="Couldn't reach the database. Check your connection and refresh.";state.loading=false;render();}
 }
 
-function doseForDay(d){
-  const k = dayKey(d);
-  return state.doses.find(x => x.dose_date === k) || null;
-}
+const doseToday=()=>state.doses.find(x=>x.dose_date===dayKey())||null;
 
 async function takeDose(){
-  const today = dayKey();
-  if(doseForDay(new Date())) return;
+  if(doseToday())return;
   try{
-    const { data, error } = await sb.from("medsnfc_doses")
-      .insert({ tag_id: state.tag.id, dose_date: today }).select().single();
-    if(error) throw error;
-    state.doses.push(data);
-    toast("Saved · "+fmtTime(data.taken_at));
-    render();
-  }catch(e){ console.error(e); toast("Save failed — try again"); }
+    const {data,error}=await sb.from("medsnfc_doses").insert({tag_id:state.tag.id,dose_date:dayKey()}).select().single();
+    if(error)throw error;
+    state.doses.push(data);toast("Saved · "+fmt(data.taken_at));render();
+  }catch(e){console.error(e);toast("Save failed — try again");}
 }
-
 async function undoDose(){
-  const rec = doseForDay(new Date());
-  if(!rec) return;
+  const r=doseToday();if(!r)return;
+  try{await sb.from("medsnfc_doses").delete().eq("id",r.id);state.doses=state.doses.filter(x=>x.id!==r.id);render();}
+  catch(e){toast("Couldn't undo");}
+}
+
+function switchPeriod(id){const u=new URL(location.href);u.searchParams.set("tag",id);history.replaceState(null,"",u);loadAll();}
+function toggleCare(){careView=!careView;render();toast(careView?"Caregiver view":"My meds");}
+
+/* ---- add / edit meds (patient controls own meds) ---- */
+function openAdd(){showModal({mode:"add"});}
+function openEdit(m){showModal({mode:"edit",med:m});}
+function showModal(opts){
+  const isEdit=opts.mode==="edit";const m=opts.med||{};
+  document.getElementById("modalHost").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h3>${isEdit?"Edit medication":"Add a medication"}</h3>
+      <div class="fld"><label>Medication name</label>
+        <input id="mName" placeholder="e.g. Lisinopril 10mg" value="${(m.name||'').replace(/"/g,'&quot;')}"></div>
+      <div class="fld"><label>Note (optional)</label>
+        <input id="mMeta" placeholder="e.g. Blood pressure" value="${(m.meta||'').replace(/"/g,'&quot;')}"></div>
+      <button class="modal-save" onclick="saveMed(${isEdit?`'${m.id}'`:"null"})">${isEdit?"Save changes":"Add it"}</button>
+      ${isEdit?`<button class="modal-del" onclick="removeMed('${m.id}')">Delete this medication</button>`:""}
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>`;
+}
+function closeModal(){document.getElementById("modalHost").innerHTML="";}
+async function saveMed(id){
+  const name=document.getElementById("mName").value.trim();
+  const meta=document.getElementById("mMeta").value.trim();
+  if(!name){toast("Enter a name");return;}
   try{
-    await sb.from("medsnfc_doses").delete().eq("id", rec.id);
-    state.doses = state.doses.filter(x=>x.id!==rec.id);
-    render();
-  }catch(e){ console.error(e); toast("Couldn't undo"); }
+    if(id){
+      await sb.from("medsnfc_meds").update({name,meta}).eq("id",id);
+    }else{
+      await sb.from("medsnfc_meds").insert({tag_id:state.tag.id,name,meta,sort_order:state.meds.length+1});
+    }
+    closeModal();await loadAll();toast("Saved");
+  }catch(e){console.error(e);toast("Couldn't save");}
+}
+async function removeMed(id){
+  try{await sb.from("medsnfc_meds").delete().eq("id",id);closeModal();await loadAll();toast("Removed");}
+  catch(e){toast("Couldn't remove");}
 }
 
-async function resetDay(e){
-  e.preventDefault();
-  await undoDose();
-  toast("Today reset");
-}
-
-/* ---------------- Caregiver: add / remove meds ---------------- */
-async function addMed(){
-  const name = document.getElementById("medName").value.trim();
-  const meta = document.getElementById("medMeta").value.trim();
-  const tagId = document.getElementById("medTag").value;
-  if(!name){ toast("Enter a medication name"); return; }
-  try{
-    const order = state.meds.length + 1;
-    const { data, error } = await sb.from("medsnfc_meds")
-      .insert({ tag_id: tagId, name, meta, sort_order: order }).select().single();
-    if(error) throw error;
-    toast("Added "+name);
-    // reload meds for whichever tag we're viewing
-    await loadAll();
-  }catch(e){ console.error(e); toast("Couldn't add med"); }
-}
-
-async function delMed(id){
-  try{
-    await sb.from("medsnfc_meds").delete().eq("id", id);
-    state.meds = state.meds.filter(m=>m.id!==id);
-    render();
-    toast("Removed");
-  }catch(e){ console.error(e); toast("Couldn't remove"); }
-}
-
-/* ---------------- UI ---------------- */
-
-function switchPeriod(tagId){
-  const url = new URL(location.href);
-  url.searchParams.set("tag", tagId);
-  history.replaceState(null,"",url);
-  loadAll();
-}
-
-function setRole(r){
-  role=r;
-  document.getElementById("rolePatient").classList.toggle("active", r==="patient");
-  document.getElementById("roleCaregiver").classList.toggle("active", r==="caregiver");
-  render();
-}
-function periodGreeting(){ const h=new Date().getHours(); return h<12?"Good morning":h<18?"Good afternoon":"Good evening"; }
-function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"),2200); }
-
-function history7(){
-  const out=[];
-  for(let i=0;i<7;i++){ const d=new Date(); d.setDate(d.getDate()-i);
-    const rec=doseForDay(d); out.push({date:d, taken:!!rec, time:rec?rec.taken_at:null}); }
-  return out;
-}
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2000);}
+const greet=()=>{const h=new Date().getHours();return h<12?"Good morning":h<18?"Good afternoon":"Good evening";};
+function hist7(){const o=[];for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);const r=state.doses.find(x=>x.dose_date===dayKey(d));o.push({date:d,taken:!!r,time:r?r.taken_at:null});}return o;}
 
 function render(){
-  document.getElementById("tagLabel").textContent = state.tag ? state.tag.id : currentTag();
-  const v = document.getElementById("view");
-  if(state.loading){ v.innerHTML = `<div class="loading">Loading…</div>`; return; }
-  if(state.error){ v.innerHTML = `<div class="err">${state.error}</div>` +
-     (role==="caregiver"? renderSetup() : ""); return; }
-  v.innerHTML = role==="patient" ? renderPatient() : renderCaregiver();
+  const f=document.getElementById("foot");
+  const v=document.getElementById("view");
+  if(state.loading){v.innerHTML='<div class="loading">Loading…</div>';f.textContent="";return;}
+  if(state.error){v.innerHTML=`<div class="err">${state.error}</div>`;return;}
+  v.innerHTML=renderPatient();
+  f.textContent = careView ? "Caregiver view — tap the eye to return to your meds" : "Tap the eye icon for caregiver view";
 }
 
 function renderPatient(){
-  const t=state.tag, done=!!doseForDay(new Date());
-  const rec=doseForDay(new Date());
-  const hist=history7().reverse();
-  const cgName = firstName(state.patient && state.patient.caregiver_name);
-  const strip = hist.map(h=>{
-    const isToday=h.date.toDateString()===new Date().toDateString();
-    return `<div class="wd ${h.taken?'taken':''} ${isToday?'today':''}">
-      <div class="d">${DAYS[h.date.getDay()]}</div><div class="m">${h.taken?'✓':isToday?'•':''}</div></div>`;
-  }).join("");
-  const action = done ? `
-    <div class="done">
-      <div class="done-ring">✓</div>
-      <div class="done-msg">All done</div>
-      <div class="done-time">Taken at ${fmtTime(rec.taken_at)}</div>
-      <div class="done-told">${cgName} has been told — everything's fine</div>
-      <button class="undo" onclick="undoDose()">undo</button>
-    </div>` : `
-    <button class="big-tap ${t.dose_group==='Evening'?'sub':''}" onclick="takeDose()">
-      <span class="glyph">✓</span><span class="label">I took them</span>
-    </button>
-    <button class="remind" onclick="toast('Okay — we\\'ll remind you soon')">⏰ Remind me later</button>`;
-  const meds = state.meds.length ? state.meds.map(m=>`
+  const t=state.tag,done=!!doseToday(),rec=doseToday();
+  const periodBtns=state.periods.map(p=>`<button class="${p.id===t.id?'active':''}" onclick="switchPeriod('${p.id}')">${p.dose_group}<span class="t">${p.due_label||''}</span></button>`).join("");
+  const hist=hist7().reverse();
+  const strip=hist.map(h=>{const today=h.date.toDateString()===new Date().toDateString();
+    return `<div class="wd ${h.taken?'taken':''} ${today?'today':''}"><div class="d">${DAYS[h.date.getDay()]}</div><div class="m">${h.taken?'✓':today?'•':''}</div></div>`;}).join("");
+
+  // caregiver glance (only when toggled)
+  let careBlock="";
+  if(careView){
+    const taken=hist.filter(h=>h.taken).length;let streak=0;for(const h of hist7()){if(h.taken)streak++;else break;}
+    careBlock=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:24px">
+      <div style="font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px">Caregiver glance</div>
+      <div style="display:flex;gap:10px;text-align:center">
+        <div style="flex:1"><div style="font-family:'Bebas Neue';font-size:34px;color:var(--teal)">${taken}/7</div><div style="font-size:13px;color:var(--muted)">days taken</div></div>
+        <div style="flex:1"><div style="font-family:'Bebas Neue';font-size:34px;color:var(--teal)">${streak}</div><div style="font-size:13px;color:var(--muted)">day streak</div></div>
+        <div style="flex:1"><div style="font-family:'Bebas Neue';font-size:34px;color:var(--white)">${Math.round(taken/7*100)}%</div><div style="font-size:13px;color:var(--muted)">on track</div></div>
+      </div></div>`;
+  }
+
+  const action=done?`
+    <div class="done"><div class="done-ring">✓</div><div class="done-msg">All done</div>
+      <div class="done-time">Taken at ${fmt(rec.taken_at)}</div>
+      <button class="undo" onclick="undoDose()">undo</button></div>`:`
+    <button class="big-tap" onclick="takeDose()"><span class="glyph">✓</span><span class="label">I took them</span></button>
+    <button class="remind" onclick="toast('Okay — check back soon')">⏰ Remind me later</button>`;
+
+  const meds=state.meds.length?state.meds.map(m=>`
     <div class="pill-row ${done?'on':''}">
       <div class="pill-dot">${done?'✓':'○'}</div>
-      <div><div class="pill-name">${m.name}</div><div class="pill-meta">${m.meta||''}</div></div>
-      <div class="pill-when">${done?'taken':'due'}</div>
-    </div>`).join("") : `<div class="empty">No medications set up yet.</div>`;
-  const periodBtns = state.periods.map(pr=>{
-    const taken = state.doses.find(d=>d.dose_date===dayKey()) && pr.id===t.id; // current shows its own state
-    return `<button class="${pr.id===t.id?'active':''}" onclick="switchPeriod('${pr.id}')">${pr.dose_group}<span class="sub">${pr.due_label||''}</span></button>`;
-  }).join("");
+      <div><div class="pill-name">${m.name}</div>${m.meta?`<div class="pill-meta">${m.meta}</div>`:''}</div>
+      <button class="pill-edit" onclick='openEdit(${JSON.stringify(m).replace(/'/g,"&#39;")})'>✎</button>
+    </div>`).join(""):`<div style="color:var(--muted);text-align:center;padding:18px">No medications here yet. Add your first below.</div>`;
+
   return `<div class="patient">
     ${state.periods.length>1?`<div class="periods">${periodBtns}</div>`:''}
-    <div class="p-period">${periodGreeting()}</div>
-    <div class="p-name">${t.dose_group} meds</div>
-    <div class="p-due">${done?'Logged for today':'Due at <b>'+(t.due_label||'')+'</b>'}</div>
+    ${careBlock}
+    <div class="greet">${greet()}</div>
+    <div class="title">${t.dose_group} meds</div>
+    <div class="due">${done?'Logged for today':'Due at <b>'+(t.due_label||'')+'</b>'}</div>
     ${action}
-    <div class="p-meds">
-      <div class="p-meds-h">${t.dose_group} · ${state.meds.length} medication${state.meds.length!==1?'s':''}</div>
+    <div class="meds">
+      <div class="meds-h"><span class="lbl">${t.dose_group} · ${state.meds.length} medication${state.meds.length!==1?'s':''}</span></div>
       ${meds}
+      <button class="add-med" onclick="openAdd()">+ Add a medication</button>
     </div>
-    <div class="week-strip">${strip}</div>
-  </div>`;
-}
-
-function renderCaregiver(){
-  const t=state.tag, p=state.patient;
-  const hist=history7(), today=hist[0];
-  const takenDays=hist.filter(h=>h.taken).length;
-  let streak=0; for(const h of hist){ if(h.taken)streak++; else break; }
-  const cgName=firstName(p&&p.caregiver_name);
-  const adh=hist.slice().reverse().map(h=>{
-    const pct=h.taken?100:0;
-    return `<div class="adh-row"><div class="adh-day">${DAYS[h.date.getDay()]}</div>
-      <div class="adh-bar"><div class="adh-fill" style="width:${pct}%"></div></div>
-      <div class="adh-pct">${pct}%</div></div>`;
-  }).join("");
-  const feed = hist.filter(h=>h.taken).slice(0,5).map(h=>`
-    <div class="feed-row"><div class="feed-ic ok">✓</div>
-    <div class="feed-txt">${firstName(p&&p.name)} took ${t.dose_group.toLowerCase()} meds</div>
-    <div class="feed-time">${DAYS[h.date.getDay()]} ${fmtTime(h.time)}</div></div>`).join("")
-    || `<div class="empty">No doses logged yet. Switch to PATIENT and tap.</div>`;
-  const statusLine = today.taken
-    ? `<span class="ok">● Today's ${t.dose_group.toLowerCase()} dose taken at ${fmtTime(today.time)}</span>`
-    : `<span class="warn">● ${t.dose_group} dose not yet taken — due ${t.due_label||''}</span>`;
-  return `<div class="caregiver">
-    <div class="cg-head"><div class="cg-avatar">💊</div>
-      <div><div class="cg-name">${p?p.name:'—'}</div><div class="cg-status">${statusLine}</div></div></div>
-    <div class="stats">
-      <div class="stat"><div class="v good">${takenDays}</div><div class="l">Days taken (7d)</div></div>
-      <div class="stat"><div class="v ${streak>0?'good':'warn'}">${streak}</div><div class="l">Day streak</div></div>
-      <div class="stat"><div class="v">${Math.round(takenDays/7*100)}%</div><div class="l">Adherence</div></div>
-    </div>
-    <div class="live"><div class="live-h">Live activity</div>${feed}</div>
-    <div class="adh"><div class="adh-h">This week — adherence</div>${adh}</div>
-    ${renderSetup()}
-  </div>`;
-}
-
-function renderSetup(){
-  const tagId = state.tag ? state.tag.id : currentTag();
-  const meds = state.meds.map(m=>`
-    <div class="med-item"><div><div class="nm">${m.name}</div><div class="mt">${m.meta||''}</div></div>
-    <button class="med-del" onclick="delMed('${m.id}')">×</button></div>`).join("")
-    || `<div class="empty">No medications yet — add the first below.</div>`;
-  return `<div class="setup">
-    <div class="setup-h">Set up medications</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Editing tag: <b style="color:var(--teal)">${tagId}</b></div>
-    ${meds}
-    <div style="height:14px"></div>
-    <div class="field"><label>Medication name</label>
-      <input id="medName" placeholder="e.g. Metoprolol 25mg"></div>
-    <div class="field"><label>Note (optional)</label>
-      <input id="medMeta" placeholder="e.g. Blood pressure · with breakfast"></div>
-    <input type="hidden" id="medTag" value="${tagId}">
-    <button class="add-btn" onclick="addMed()">+ Add medication</button>
+    <div class="week">${strip}</div>
   </div>`;
 }
 
