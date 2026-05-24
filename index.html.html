@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MedsNFC</title>
+<meta name="theme-color" content="#0C0F1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MedsNFC">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230C0F1A'/%3E%3Ccircle cx='90' cy='74' r='34' fill='none' stroke='%2300C4A7' stroke-width='10'/%3E%3Cpath d='M90 58v32M74 74h32' stroke='%2300C4A7' stroke-width='10' stroke-linecap='round'/%3E%3Ctext x='90' y='150' font-family='Arial' font-size='28' font-weight='bold' fill='%23fff' text-anchor='middle'%3EMEDS%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230C0F1A'/%3E%3Ccircle cx='90' cy='90' r='44' fill='none' stroke='%2300C4A7' stroke-width='12'/%3E%3Cpath d='M90 66v48M66 90h48' stroke='%2300C4A7' stroke-width='12' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIk1lZHNORkMiLCAic2hvcnRfbmFtZSI6ICJNZWRzTkZDIiwgImRlc2NyaXB0aW9uIjogIlRhcCB0byBsb2cgeW91ciBtZWRpY2F0aW9ucyIsICJzdGFydF91cmwiOiAiLiIsICJzY29wZSI6ICIuIiwgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwQzBGMUEiLCAidGhlbWVfY29sb3IiOiAiIzBDMEYxQSIsICJpY29ucyI6IFt7InNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgcng9JzExMCcgZmlsbD0nJTIzMEMwRjFBJy8lM0UlM0NjaXJjbGUgY3g9JzI1NicgY3k9JzI1Nicgcj0nMTIwJyBmaWxsPSdub25lJyBzdHJva2U9JyUyMzAwQzRBNycgc3Ryb2tlLXdpZHRoPSczNCcvJTNFJTNDcGF0aCBkPSdNMjU2IDE4OHYxMzZNMTg4IDI1NmgxMzYnIHN0cm9rZT0nJTIzMDBDNEE3JyBzdHJva2Utd2lkdGg9JzM0JyBzdHJva2UtbGluZWNhcD0ncm91bmQnLyUzRSUzQy9zdmclM0UiLCAic2l6ZXMiOiAiMTkyeDE5MiIsICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLCAicHVycG9zZSI6ICJhbnkgbWFza2FibGUifSwgeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJyUzRSUzQ3JlY3Qgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIHJ4PScxMTAnIGZpbGw9JyUyMzBDMEYxQScvJTNFJTNDY2lyY2xlIGN4PScyNTYnIGN5PScyNTYnIHI9JzEyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPSclMjMwMEM0QTcnIHN0cm9rZS13aWR0aD0nMzQnLyUzRSUzQ3BhdGggZD0nTTI1NiAxODh2MTM2TTE4OCAyNTZoMTM2JyBzdHJva2U9JyUyMzAwQzRBNycgc3Ryb2tlLXdpZHRoPSczNCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8lM0UlM0Mvc3ZnJTNFIiwgInNpemVzIjogIjUxMng1MTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIn1dfQ==">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -37,7 +45,8 @@ button{font-family:inherit}
 .due{text-align:center;font-size:17px;color:var(--muted);margin-bottom:28px}
 .due b{color:var(--teal);font-weight:700}
 
-.big-tap{width:100%;border:none;cursor:pointer;color:#08120F;background:linear-gradient(180deg,#1FE0BE,#00C4A7);border-radius:30px;padding:44px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 18px 40px -12px rgba(0,196,167,.5);transition:transform .12s}
+.big-tap{width:100%;border:none;cursor:pointer;color:#1A1200;background:linear-gradient(180deg,#FFC83D,#F0A500);border-radius:30px;padding:44px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 18px 40px -12px rgba(240,165,0,.5);transition:transform .12s}
+.big-tap.taken{color:#08120F;background:linear-gradient(180deg,#1FE0BE,#00C4A7);box-shadow:0 18px 40px -12px rgba(0,196,167,.5)}
 .big-tap:active{transform:scale(.97)}
 .big-tap .glyph{font-size:60px;line-height:1}
 .big-tap .label{font-size:28px;font-weight:700}
@@ -107,7 +116,7 @@ const SUPABASE_URL="https://ogyqghrcybkwxxxevdlz.supabase.co";
 const SUPABASE_KEY="sb_publishable_BSF_8zpvls7hG6R7dkehPw_Mgz02T0w";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const dayKey=(d=new Date())=>d.toISOString().slice(0,10);
+const dayKey=(d=new Date())=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),dd=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${dd}`;};
 const fmt=iso=>new Date(iso).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
 const currentTag=()=>new URLSearchParams(location.search).get("tag")||"rich-morning";
 
@@ -253,6 +262,13 @@ function renderPatient(){
 }
 
 loadAll();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  const swCode=`self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`;
+  const blob=new Blob([swCode],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
 </script>
 </body>
 </html>
